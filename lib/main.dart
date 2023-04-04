@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:park/splash_screen.dart';
-import 'package:park/splashemi.dart';
-
 import 'card_screen.dart';
 
 void main() {
@@ -19,7 +17,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: Splash());
+        home: SplashScreen());
   }
 }
 
