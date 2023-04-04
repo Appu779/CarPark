@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:park/splash_screen.dart';
-import 'card_screen.dart';
 
 void main() {
   runApp(const MyApp());
