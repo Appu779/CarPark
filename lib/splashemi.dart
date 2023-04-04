@@ -6,12 +6,12 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:park/main.dart';
 
-class SplashScreen extends StatefulWidget {
+class Splash extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<Splash> {
   void initState() {
     super.initState();
     Timer(

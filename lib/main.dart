@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:park/splash_screen.dart';
+import 'package:park/splashemi.dart';
+
+import 'card_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +19,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: SplashScreen());
+        home: Splash());
   }
 }
 
@@ -26,15 +29,65 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: InkWell(
-          onTap: () {
-            print("OnTap on container");
-          },
-          child: Container(
-            height: 500,
-            width: 500,
-            color: Colors.yellow,
+      appBar: AppBar(),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: InkWell(
+                    onTap: () {
+                      print("Taped on horizontal scroll");
+                    },
+                    child: Row(children: [
+                      Container(
+                        margin: EdgeInsets.only(right: 10),
+                        height: 200,
+                        width: 200,
+                        color: Colors.orange,
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(right: 10),
+                        height: 200,
+                        width: 200,
+                        color: Colors.red,
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(right: 10),
+                        height: 200,
+                        width: 200,
+                        color: Colors.yellow,
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(right: 10),
+                        height: 200,
+                        width: 200,
+                        color: Colors.green,
+                      )
+                    ]),
+                  ),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                height: 200,
+                color: Colors.red,
+              ),
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                height: 200,
+                color: Colors.yellow,
+              ),
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                height: 200,
+                color: Colors.green,
+              )
+            ],
           ),
         ),
       ),
