@@ -4,10 +4,19 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'pages/home.dart';
 
 void main() {
-  runApp(MaterialApp(
-    themeMode: ThemeMode.system,
-    debugShowCheckedModeBanner: false,
-    title: "Mile2Park",
-    home: SplashScreen(),
-  ));
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      themeMode: ThemeMode.system,
+      debugShowCheckedModeBanner: false,
+      title: "Mile2Park",
+      home: SplashScreen(),
+    );
+  }
 }
