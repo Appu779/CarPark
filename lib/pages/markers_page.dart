@@ -7,7 +7,7 @@ import 'package:map/map.dart';
 import '../utils/tile_servers.dart';
 import '../utils/utils.dart';
 
-bool _darkMode = true;
+bool _darkMode = false;
 
 class MarkersPage extends StatefulWidget {
   const MarkersPage({Key? key}) : super(key: key);

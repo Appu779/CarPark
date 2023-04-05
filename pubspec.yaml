@@ -26,6 +26,8 @@ dependencies:
     sdk: flutter
   platform: ^3.1.0
   map: ^1.4.1
+  flutter_spinkit: ^5.1.0
+  loading_animation_widget: ^1.2.0+4
 
 dev_dependencies:
   flutter_test:
@@ -44,8 +46,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+     - assets\images\logo.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
