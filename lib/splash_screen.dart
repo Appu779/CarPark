@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:CarPark/pages/home.dart';
+
+import 'package:CarPark/login_screen.dart';
+import 'package:CarPark/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -17,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Duration(seconds: 2),
       () => Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Home()),
+        MaterialPageRoute(builder: (context) => LoginScreen()),
       ),
     );
   }

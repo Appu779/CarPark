@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "642739384286",
+    "project_id": "mile2park-d82bd",
+    "storage_bucket": "mile2park-d82bd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642739384286:android:4e0885772a4a093af7b74f",
+        "android_client_info": {
+          "package_name": "com.example.maps"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "642739384286-gq1b23g5tpcsjlfp95b42tvcus5gdacf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.maps",
+            "certificate_hash": "12112d2cbc88d11d0efdb6774764edf6c0110e07"
+          }
+        },
+        {
+          "client_id": "642739384286-fj9l003rl61gh8f45lat70h5ash3m0uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKjji07TSHVkcezE1k6ZYsXINpMgOPb5M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642739384286-7cqd1059bfi872r33nou2vhejq02le9n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "642739384286-jso0kgn80mec70hu69cp90pd25as9pck.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.park"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642739384286:android:c82f63454d006374f7b74f",
+        "android_client_info": {
+          "package_name": "com.example.park"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "642739384286-v2sm3560bpg27qh4corni1nc4dq83782.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.park",
+            "certificate_hash": "12112d2cbc88d11d0efdb6774764edf6c0110e07"
+          }
+        },
+        {
+          "client_id": "642739384286-fj9l003rl61gh8f45lat70h5ash3m0uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKjji07TSHVkcezE1k6ZYsXINpMgOPb5M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642739384286-7cqd1059bfi872r33nou2vhejq02le9n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "642739384286-jso0kgn80mec70hu69cp90pd25as9pck.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.park"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
