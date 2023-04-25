@@ -1,8 +1,6 @@
-import 'package:CarPark/map_screen.dart';
-
+import 'package:CarPark/screens/map_screen.dart';
 import 'package:flutter/material.dart';
-
-import 'firebase_service.dart';
+import '../services/firebase_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -43,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: FloatingActionButton.extended(
                 onPressed: () async {
                   await FirebaseServices().signInWithGoogle();
-                  Navigator.push(context,
+                  Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) => MapScreen()));
                 },
                 icon: Image.asset(

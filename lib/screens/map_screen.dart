@@ -1,23 +1,28 @@
-//Rimport 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-const LatLng currentLocation = LatLng(25.1193, 55.3773);
+const LatLng currentLocation = LatLng(12.092770, 75.194881);
 
 class MapScreen extends StatefulWidget {
+  const MapScreen({Key? key}) : super(key: key);
+
   @override
-  _MapScreenState createState() => _MapScreenState();
+  MapScreenState createState() => MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   late GoogleMapController mapController;
-  Set<Marker> markers = {};
+  late AnimationController animationController;
+
+  bool isMenuOpen = false;
+
   @override
   void initState() {
     super.initState();
     _enableLocationService();
+    animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 100));
   }
 
   Future<void> _enableLocationService() async {
@@ -43,16 +48,55 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        initialCameraPosition: const CameraPosition(
-          target: currentLocation,
-          zoom: 14,
-        ),
-        onMapCreated: (controller) {
-          mapController = controller;
-        },
-        myLocationEnabled: true,
+      //drawer: AnimatedMenu(),
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: const CameraPosition(
+              target: currentLocation,
+              zoom: 15,
+            ),
+            onMapCreated: (controller) {
+              mapController = controller;
+            },
+
+            zoomControlsEnabled: false,
+            mapType: MapType.normal,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            compassEnabled: true,
+          ),
+          Positioned(
+            top: 43,
+            left: 20,
+            child: GestureDetector(
+              onTap: () {
+                isMenuOpen = !isMenuOpen;
+                if (isMenuOpen) {
+                  animationController.forward();
+                } else {
+                  animationController.reverse();
+                }
+              },
+              child: AnimatedIcon(
+                icon: AnimatedIcons.menu_close,
+                progress: animationController,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 30,
+            right: 20,
+            child: IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {},
+              color: Colors.black,
+            ),
+          )
+        ],
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
@@ -62,12 +106,7 @@ class _MapScreenState extends State<MapScreen> {
           mapController.animateCamera(CameraUpdate.newCameraPosition(
               CameraPosition(
                   target: LatLng(position.latitude, position.longitude),
-                  zoom: 14)));
-          markers.clear();
-          markers.add(Marker(
-              markerId: MarkerId('Live location'),
-              position: LatLng(position.latitude, position.longitude)));
-          setState(() {});
+                  zoom: 13)));
         },
         tooltip: 'My Location',
         child: const Icon(Icons.my_location),
@@ -102,14 +141,5 @@ class _MapScreenState extends State<MapScreen> {
     Position position = await Geolocator.getCurrentPosition();
 
     return position;
-  }
-
-  addMarker(String id, LatLng location) {
-    var marker = Marker(
-        markerId: MarkerId(id),
-        position: location,
-        infoWindow: InfoWindow(title: 'place', snippet: 'description'));
-
-    setState(() {});
   }
 }

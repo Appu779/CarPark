@@ -1,27 +1,37 @@
 import 'dart:async';
-import 'dart:ui';
-
-import 'package:CarPark/login_screen.dart';
-import 'package:CarPark/map_screen.dart';
+import 'package:CarPark/screens/login_screen.dart';
+import 'package:CarPark/screens/map_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  SplashScreenState createState() => SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> {
+  @override
   void initState() {
     super.initState();
-    Timer(
-      Duration(seconds: 2),
-      () => Navigator.pushReplacement(
+    Timer(const Duration(seconds: 2), () => checkLogin());
+  }
+
+  Future<void> checkLogin() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      ),
-    );
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MapScreen(),),
+      );
+    }
   }
 
   @override
@@ -30,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
@@ -52,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     height: 300.0,
                     width: 300.0,
                   ),
-                  SizedBox(height: 20.0),
+                  const SizedBox(height: 20.0),
                   SpinKitCircle(
                     size: 50.0,
                     itemBuilder: (context, index) {
