@@ -54,7 +54,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           GoogleMap(
             initialCameraPosition: const CameraPosition(
               target: currentLocation,
-              zoom: 15,
+              zoom: 18,
             ),
             onMapCreated: (controller) {
               mapController = controller;
