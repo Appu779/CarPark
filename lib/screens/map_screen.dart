@@ -1,6 +1,9 @@
+import 'package:CarPark/components/sidebar.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import 'SideBar.dart';
 
 const LatLng currentLocation = LatLng(12.092770, 75.194881);
 
@@ -59,7 +62,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             onMapCreated: (controller) {
               mapController = controller;
             },
-
             zoomControlsEnabled: false,
             mapType: MapType.normal,
             myLocationEnabled: true,
@@ -74,6 +76,11 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 isMenuOpen = !isMenuOpen;
                 if (isMenuOpen) {
                   animationController.forward();
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SideBar(),
+                      ));
                 } else {
                   animationController.reverse();
                 }
