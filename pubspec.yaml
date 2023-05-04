@@ -26,6 +26,8 @@ dependencies:
   floating_navbar: ^2.0.2
   firebase_database: ^10.1.1
   cloud_firestore: ^4.5.3
+  geofence_service: ^3.5.0
+
   
 
 dev_dependencies:
@@ -35,8 +37,6 @@ dev_dependencies:
 
 
 flutter:
-
-
   uses-material-design: true
 
 
