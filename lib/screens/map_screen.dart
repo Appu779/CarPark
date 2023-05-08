@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../components/sidebar.dart';
+import 'package:geoflutterfire2/geoflutterfire2.dart';
 
 const LatLng currentLocation = LatLng(12.092770, 75.194881);
 
@@ -49,12 +49,14 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               // await fetchCircles();
               await fetchPolygons();
             },
+            zoomGesturesEnabled: true,
             zoomControlsEnabled: true,
             mapType: MapType.normal,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             compassEnabled: true,
             rotateGesturesEnabled: true,
+            buildingsEnabled: true,
             markers: markers,
             circles: circles,
             polygons: polygons,
@@ -71,9 +73,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const SideBar(),
-                      )
-                      );
-                      animationController.reverse();
+                      ));
+                  animationController.reverse();
                 }
               },
               child: AnimatedIcon(
@@ -207,4 +208,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       polygons.addAll(newPolygons);
     });
   }
+
+  final geo = GeoFlutterFire();
+
 }
