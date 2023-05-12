@@ -1,29 +1,8 @@
-import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class LiveLocation {
-  Future<void> enableLocationService() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return;
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      return;
-    }
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await Geolocator.openLocationSettings();
-      if (!serviceEnabled) {
-        return;
-      }
-    }
-  }
-}
 
 class MapData {
   static Future<List<Marker>> fetchMarkers() async {
@@ -83,3 +62,5 @@ class MapData {
     }).toSet();
   }
 }
+
+
