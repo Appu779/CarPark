@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     FirebaseDatabase.instance.setPersistenceEnabled(true);
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       showPerformanceOverlay: false,
