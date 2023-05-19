@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../components/parking_avail.dart';
 import '../components/sidebar.dart';
+import '../functions/model_bottom_sheet_parking.dart';
 
 const LatLng currentLocation = LatLng(12.092770, 75.194881);
 
@@ -230,17 +231,18 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       final lat = data['latitude'] as double;
       final lng = data['longitude'] as double;
       final location = data['location'] as String;
-      final snippet = data['snippet'] as String;
-      var availablespace = data['availspace'] as num;
+      // final snippet = data['snippet'] as String;
+      // var availablespace = data['availspace'] as num;
 
       return Marker(
-        markerId: MarkerId(doc.id),
-        position: LatLng(lat, lng),
-        infoWindow: InfoWindow(
-          title: location,
-          snippet: 'Available Space: $availablespace $snippet',
-        ),
-      );
+          markerId: MarkerId(doc.id),
+          position: LatLng(lat, lng),
+          infoWindow: InfoWindow(
+            title: location,
+          ),
+          onTap: () {
+            showBottomSheetParking(context, doc.reference.path);
+          });
     });
 
     setState(() {
