@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:CarPark/screens/login_screen.dart';
 import 'package:CarPark/screens/map_screen.dart';
+import 'package:CarPark/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,7 +30,9 @@ class SplashScreenState extends State<SplashScreen> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MapScreen(),),
+        MaterialPageRoute(
+          builder: (context) => const MapScreen(),
+        ),
       );
     }
   }

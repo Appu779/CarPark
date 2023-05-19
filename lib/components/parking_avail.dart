@@ -16,6 +16,7 @@ class Checkavilability {
       if (data != null && data is Map) {
         Map<String, dynamic> mapData = data.cast<String, dynamic>();
         Position position = await Geolocator.getCurrentPosition();
+        
 
         for (String key in mapData.keys) {
           Map doc = mapData[key];
