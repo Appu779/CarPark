@@ -1,8 +1,11 @@
+import 'package:CarPark/models/park_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseServices {
+  final firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
   final _googleSignIn = GoogleSignIn();
   signInWithGoogle() async {
@@ -28,5 +31,52 @@ class FirebaseServices {
   signOut() async {
     await _auth.signOut();
     await _googleSignIn.signOut();
+  }
+
+  //firestore services
+
+  
+  // String uid = FirebaseAuth.instance.currentUser!.uid;
+  //parking : P1,P2
+
+// function to add vehicle to db if not already added
+  Future<void> addVehicle(
+      {required String uid, required String parkingId}) async {
+    DocumentReference<Map<String, dynamic>> docRef =
+        firestore.collection("Parking").doc(parkingId);
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
+    ParkModel model = ParkModel.fromMap(snapshot.data()!);
+
+    if (!model.vehicles.contains(uid)) {
+      await docRef.update(
+        {
+          'vehicles': FieldValue.arrayUnion([uid])
+        },
+      );
+    }
+  }
+
+// function to get the number of vacancy
+  Future<int> getNumberOfAvailableParking(String parkingId) async {
+    DocumentReference<Map<String, dynamic>> docRef =
+        firestore.collection("Parking").doc(parkingId);
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
+    ParkModel model = ParkModel.fromMap(snapshot.data()!);
+    return model.totalspace - model.vehicles.length;
+  }
+
+// function to remove vehicle from parkList
+  Future<void> removeVehicle(String uid, String parkingId) async {
+    DocumentReference<Map<String, dynamic>> docRef =
+        firestore.collection("Parking").doc(parkingId);
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
+    ParkModel model = ParkModel.fromMap(snapshot.data()!);
+    if (model.vehicles.contains(uid)) {
+      await docRef.update(
+        {
+          'vehicles': FieldValue.arrayRemove([uid])
+        },
+      );
+    }
   }
 }

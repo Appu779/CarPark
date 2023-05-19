@@ -21,25 +21,11 @@ Future<void> listenForParkingUpdates() async {
     dynamic data = snapshot.value;
     data = data.cast<String, dynamic>();
 
-    if (data != null && data is Map) {
-      Map<String, dynamic> mapData = data.cast<String, dynamic>();
-      Position position = await Geolocator.getCurrentPosition();
+      if (data != null && data is Map) {
+        Map<String, dynamic> mapData = data.cast<String, dynamic>();
+        Position position = await Geolocator.getCurrentPosition();
 
-      List<String> carsToRemove = []; // List of cars to remove from carList
-
-      for (String key in carList) {
-        // Check if the car is still in the carList
-        if (!mapData.containsKey(key)) {
-          carsToRemove.add(key);
-        }
-      }
-
-      carsToRemove.forEach((carId) {
-        carList.remove(carId); // Remove the car from carList
-      });
-
-      for (String key in mapData.keys) {
-        if (!carList.contains(key)) {
+        for (String key in mapData.keys) {
           Map doc = mapData[key];
           int availableSpace = doc['availspace'] as int;
           int totalSpace = doc['totalspace'] as int;
