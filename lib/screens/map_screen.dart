@@ -31,9 +31,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     enableLocationService();
     fetchMarkers();
     fetchPolygons();
-    Checkavilability().listenForParkingUpdates();
-    NearbyParkingService().getNearbyParkingSpots(1000);
-    //_showParkingDetails("P1");
+    listenForParkingUpdates();
+
     animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 100));
     timer = Timer.periodic(const Duration(seconds: 4),
@@ -41,7 +40,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   void runFunction(Timer timer) {
-    Checkavilability().listenForParkingUpdates();
+    listenForParkingUpdates();
   }
 
   @override
@@ -65,6 +64,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               mapController = controller;
               await fetchMarkers();
               await fetchPolygons();
+              await listenForParkingUpdates();
               //await _showParkingDetails("P1");
               //await listenForParkingUpdates();
             },
@@ -111,7 +111,16 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               onPressed: () {},
               color: Colors.black,
             ),
-          )
+          ),
+          // Positioned(
+          //   top: 60,
+          //   right: 20,
+          //   child: IconButton(
+          //     icon: const Icon(Icons.park_rounded),
+          //     onPressed: () {},
+          //     color: Colors.black,
+          //   ),
+          // )
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,

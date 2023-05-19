@@ -1,23 +1,45 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlng/latlng.dart';
 
-class Checkavilability {
-  Future<void> listenForParkingUpdates() async {
-    DatabaseReference parkingSpotsRef =
-        FirebaseDatabase.instance.ref("Parking");
+List<String> carList = [];
+bool isUpdatingSpace = false; // Flag to indicate if space update is in progress
+Completer<void>? spaceUpdateCompleter; // Completer to wait for space update
 
-    parkingSpotsRef.onValue.listen((event) async {
-      DataSnapshot snapshot = event.snapshot;
-      dynamic data = snapshot.value;
-      data = data.cast<String, dynamic>();
+Future<void> listenForParkingUpdates() async {
+  DatabaseReference parkingSpotsRef = FirebaseDatabase.instance.ref("Parking");
 
-      if (data != null && data is Map) {
-        Map<String, dynamic> mapData = data.cast<String, dynamic>();
-        Position position = await Geolocator.getCurrentPosition();
+  parkingSpotsRef.onValue.listen((event) async {
+    if (isUpdatingSpace) {
+      // If an update is already in progress, wait for it to complete
+      await spaceUpdateCompleter?.future;
+    }
 
-        for (String key in mapData.keys) {
+    DataSnapshot snapshot = event.snapshot;
+    dynamic data = snapshot.value;
+    data = data.cast<String, dynamic>();
+
+    if (data != null && data is Map) {
+      Map<String, dynamic> mapData = data.cast<String, dynamic>();
+      Position position = await Geolocator.getCurrentPosition();
+
+      List<String> carsToRemove = []; // List of cars to remove from carList
+
+      for (String key in carList) {
+        // Check if the car is still in the carList
+        if (!mapData.containsKey(key)) {
+          carsToRemove.add(key);
+        }
+      }
+
+      carsToRemove.forEach((carId) {
+        carList.remove(carId); // Remove the car from carList
+      });
+
+      for (String key in mapData.keys) {
+        if (!carList.contains(key)) {
           Map doc = mapData[key];
           int availableSpace = doc['availspace'] as int;
           int totalSpace = doc['totalspace'] as int;
@@ -32,36 +54,76 @@ class Checkavilability {
           );
 
           bool isWithin = pointInPolygon(
-              LatLng(position.latitude, position.longitude), points);
+            LatLng(position.latitude, position.longitude),
+            points,
+          );
 
           if (isWithin) {
-            if (parkedUsers == 0 &&
-                availableSpace > 0 &&
-                availableSpace <= totalSpace) {
-              await parkingSpotsRef.child(key).update({
-                'availspace': availableSpace - 1,
-                'parkedcar': 1, // set parked users to 1
-              });
-            } else if (availableSpace == 0) {
-            } else {}
+            if (parkedUsers == 0 && availableSpace > 0 && availableSpace <= totalSpace) {
+              String carId = generateCarId(); // Generate a unique car ID
+              await _acquireLock(); // Acquire the lock
+              await parkingSpotsRef.child(key).runTransaction((mutableData) async {
+                if (mutableData.value != null) {
+                  int currentAvailableSpace = mutableData.value['availspace'] ?? 0;
+                  int currentParkedUsers = mutableData.value['parkedcar'] ?? 0;
+
+                  if (currentAvailableSpace > 0 && currentParkedUsers == 0) {
+                    mutableData.value['availspace'] = currentAvailableSpace - 1;
+                    mutableData.value['parkedcar'] = currentParkedUsers + 1;
+                    carList.add(carId); // Add the car ID to the list
+                  }
+                }
+                return mutableData;
+              } as TransactionHandler);
+              await _releaseLock(); // Release the lock
+            }
           } else {
-            if (parkedUsers > 0 && availableSpace <= totalSpace) {
-              await parkingSpotsRef.child(key).update({
-                'parkedcar': parkedUsers - 1,
-                'availspace':
-                    availableSpace + 1 // increment available space by 1
-              });
+            if (parkedUsers > 0 && availableSpace < totalSpace) {
+              await _acquireLock(); // Acquire the lock
+              await parkingSpotsRef.child(key).runTransaction((mutableData) async {
+                if (mutableData.value != null) {
+                  int currentAvailableSpace = mutableData.value['availspace'] ?? 0;
+                  int currentParkedUsers = mutableData.value['parkedcar'] ?? 0;
+
+                  if (currentParkedUsers > 0 && currentAvailableSpace < totalSpace) {
+                    mutableData.value['availspace'] = currentAvailableSpace + 1;
+                    mutableData.value['parkedcar'] = currentParkedUsers - 1;
+                    carList.remove(key); // Remove the car ID from the list
+                  }
+                }
+                return mutableData;
+              } as TransactionHandler);
+              await _releaseLock(); // Release the lock
             }
           }
         }
       }
-
-      Timer(const Duration(seconds: 4), () {
-        listenForParkingUpdates();
-      });
-    });
-  }
+    }
+  });
 }
+
+Future<void> _acquireLock() async {
+  while (isUpdatingSpace) {
+    // Wait until the lock is released
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
+  isUpdatingSpace = true;
+  spaceUpdateCompleter = Completer<void>();
+}
+
+Future<void> _releaseLock() async {
+  isUpdatingSpace = false;
+  spaceUpdateCompleter?.complete();
+  spaceUpdateCompleter = null;
+}
+
+String generateCarId() {
+  // Implement your logic to generate a unique car ID
+  // Example: You can use a combination of the current timestamp and a random number
+  return DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(9999).toString();
+}
+
+
 
 bool pointInPolygon(LatLng point, List<LatLng> points) {
   int crossings = 0;
@@ -82,47 +144,42 @@ bool pointInPolygon(LatLng point, List<LatLng> points) {
 }
 
 class Nearby {
-  String id;
-  double latitude;
-  double longitude;
-
-  Nearby(this.id, this.latitude, this.longitude);
-}
-
-class NearbyParkingService {
-  Future<List<Nearby>> getNearbyParkingSpots(double radius) async {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
+  Future<List<dynamic>> getNearbyParkingAreas(
+      Position currentPosition, double radius) async {
     DatabaseReference parkingSpotsRef =
         FirebaseDatabase.instance.ref().child('Parking');
 
-    DataSnapshot snapshot = (await parkingSpotsRef.once()) as DataSnapshot;
+    // Retrieve all parking spots from the database
+    DatabaseEvent snapshot = await parkingSpotsRef.once();
+    dynamic parkingSpotsData = snapshot;
 
-    List<Nearby> nearbySpots = [];
+    // Calculate the distance between the user's location and each parking spot
+    List<dynamic> nearbyParkingAreas = [];
+    for (var entry in parkingSpotsData.entries) {
+      String parkingSpotId = entry.key;
+      Map<String, dynamic> parkingSpot = entry.value;
 
-    if (snapshot.value != null) {
-      Map data = snapshot.value as Map;
-      print(data);
-      data.forEach((key, value) {
-        double latitude = value['latitude'] as double;
-        double longitude = value['longitude'] as double;
+      double latitude = parkingSpot['latitude'] as double;
+      double longitude = parkingSpot['longitude'] as double;
+      double distance = Geolocator.distanceBetween(
+        currentPosition.latitude,
+        currentPosition.longitude,
+        latitude,
+        longitude,
+      );
 
-        double distance = Geolocator.distanceBetween(
-          position.latitude,
-          position.longitude,
-          latitude,
-          longitude,
-        );
-
-        if (distance <= radius) {
-          Nearby spot = Nearby(key.toString(), latitude, longitude);
-          nearbySpots.add(spot);
-        }
-      });
+      // Check if the parking spot is within the specified radius
+      if (distance <= radius) {
+        // Add the nearby parking spot to the list
+        nearbyParkingAreas.add({
+          'parkingSpotId': parkingSpotId,
+          'latitude': latitude,
+          'longitude': longitude,
+          'distance': distance,
+        });
+      }
     }
 
-    return nearbySpots;
+    return nearbyParkingAreas;
   }
 }
