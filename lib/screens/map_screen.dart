@@ -31,8 +31,8 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     enableLocationService();
     fetchMarkers();
     fetchPolygons();
-    listenForParkingUpdates();
-
+    //listenForParkingUpdates();
+    CheckAvailability().listenForParkingUpdates();
     animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 100));
     timer = Timer.periodic(const Duration(seconds: 4),
@@ -40,7 +40,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   void runFunction(Timer timer) {
-    listenForParkingUpdates();
+    CheckAvailability().listenForParkingUpdates();
   }
 
   @override
@@ -64,7 +64,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               mapController = controller;
               await fetchMarkers();
               await fetchPolygons();
-              await listenForParkingUpdates();
+              CheckAvailability().listenForParkingUpdates();
               //await _showParkingDetails("P1");
               //await listenForParkingUpdates();
             },

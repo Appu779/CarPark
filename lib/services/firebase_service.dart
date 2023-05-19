@@ -36,8 +36,8 @@ class FirebaseServices {
   //firestore services
 
   
-  // String uid = FirebaseAuth.instance.currentUser!.uid;
-  //parking : P1,P2
+  //  String uid = FirebaseAuth.instance.currentUser!.uid;
+  // String parkingid = "P1";
 
 // function to add vehicle to db if not already added
   Future<void> addVehicle(
