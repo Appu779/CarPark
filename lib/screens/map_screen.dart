@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'package:CarPark/components/nearbypark.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../components/parking_avail.dart';
+
 import '../components/sidebar.dart';
 import '../functions/model_bottom_sheet_parking.dart';
+import '../functions/nearbyparking_bsheet.dart';
 import '../services/firebase_service.dart';
 
 const LatLng currentLocation = LatLng(12.092770, 75.194881);
