@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:CarPark/components/nearbypark.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -7,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../components/parking_avail.dart';
 import '../components/sidebar.dart';
 import '../functions/model_bottom_sheet_parking.dart';
+import '../services/firebase_service.dart';
 
 const LatLng currentLocation = LatLng(12.092770, 75.194881);
 
@@ -20,7 +23,8 @@ class MapScreen extends StatefulWidget {
 class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   late GoogleMapController mapController;
   late AnimationController animationController;
-  late StreamSubscription<Position> positionStreamSubscription;
+  late StreamSubscription<Position> positionStreamSubscription; // Add this line
+
   late Timer timer;
   Set<Marker> markers = {};
   Set<Polygon> polygons = {};
@@ -32,22 +36,23 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     enableLocationService();
     fetchMarkers();
     fetchPolygons();
-    //listenForParkingUpdates();
-    CheckAvailability().listenForParkingUpdates();
+    listenForParkingUpdates();
+
     animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 100));
-    timer = Timer.periodic(const Duration(seconds: 4),
-        runFunction); // Add this line to create the Timer
+    // timer = Timer.periodic(const Duration(seconds: 4),
+    //     runFunction); // Add this line to create the Timer
   }
 
-  void runFunction(Timer timer) {
-    CheckAvailability().listenForParkingUpdates();
-  }
+  // void runFunction(Timer timer) {
+  //   listenForParkingUpdates();
+  // }
 
   @override
   void dispose() {
     animationController.dispose();
-    timer.cancel();
+    positionStreamSubscription.cancel();
+    //timer.cancel();
     super.dispose();
   }
 
@@ -63,9 +68,11 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             ),
             onMapCreated: (controller) async {
               mapController = controller;
-              await fetchMarkers();
-              await fetchPolygons();
-              CheckAvailability().listenForParkingUpdates();
+              fetchMarkers();
+              fetchPolygons();
+
+              listenForParkingUpdates();
+
               //await _showParkingDetails("P1");
               //await listenForParkingUpdates();
             },
@@ -124,20 +131,36 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           // )
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        onPressed: () async {
-          Position position = await userLocation();
+      //floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButton: Stack(children: [
+        Positioned(
+            left: 20,
+            bottom: 8.0,
+            child: FloatingActionButton(
+              backgroundColor: Colors.green,
+              onPressed: () async {
+                Position position = await userLocation();
 
-          mapController.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(
-                  target: LatLng(position.latitude, position.longitude),
-                  zoom: 15)));
-        },
-        tooltip: 'My Location',
-        child: const Icon(Icons.my_location),
-      ),
+                mapController.animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(
+                        target: LatLng(position.latitude, position.longitude),
+                        zoom: 15)));
+              },
+              tooltip: 'My Location',
+              child: const Icon(Icons.my_location),
+            )),
+        Positioned(
+            left: 20,
+            bottom: 70.0,
+            child: FloatingActionButton(
+              onPressed: () {
+                //findNearbyParkingAreas();
+                showNearbyParking(context);
+              },
+              tooltip: 'Nearby Parking',
+              child: const Icon(Icons.local_parking_sharp),
+            ))
+      ]),
     );
   }
 
@@ -190,39 +213,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     return position;
   }
 
-  // Future<String> getSnippet(String docId) async {
-  //   final snapshot = FirebaseDatabase.instance.ref('Parking').child(docId);
-  //   final data = snapshot as Map;
-  //   final snippet = data['snippet'] as String;
-  //   final availablespace = data['availspace'] as num;
-  //   return 'Available Space: $availablespace $snippet';
-  // }
-
-  // Future<void> fetchMarkers() async {
-  //   final snapshot =
-  //       await FirebaseFirestore.instance.collection('Parking').get();
-  //   final newmarkers = snapshot.docs.map((doc) async {
-  //     final data = doc.data();
-  //     final lat = data['latitude'] as double;
-  //     final lng = data['longitude'] as double;
-  //     final location = data['location'] as String;
-  //     final snippet = await getSnippet(doc.id);
-  //     print(data); // Retrieve snippet from Realtime Database
-  //     return Marker(
-  //       markerId: MarkerId(doc.id),
-  //       position: LatLng(lat, lng),
-  //       infoWindow: InfoWindow(
-  //         title: location,
-  //         snippet: await snippet, // Use the retrieved snippet
-  //       ),
-  //     );
-  //   });
-
-  //   setState(() {
-  //     markers.addAll(newmarkers as Iterable<Marker>);
-  //   });
-  // }
-
   Future<void> fetchMarkers() async {
     final snapshot =
         await FirebaseFirestore.instance.collection('Parking').get();
@@ -231,8 +221,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       final lat = data['latitude'] as double;
       final lng = data['longitude'] as double;
       final location = data['location'] as String;
-      // final snippet = data['snippet'] as String;
-      // var availablespace = data['availspace'] as num;
 
       return Marker(
           markerId: MarkerId(doc.id),
@@ -249,106 +237,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       markers.addAll(newmarkers);
     });
   }
-
-  // Future<void> _showParkingDetails(String Parkingid) async {
-  //   DatabaseReference parkingRef =
-  //       FirebaseDatabase.instance.ref("Parking").child(Parkingid);
-
-  //   DataSnapshot snapshot = (await parkingRef.once()) as DataSnapshot;
-  //   if (snapshot.value != null) {
-  //     dynamic data = snapshot.value;
-  //     data = data.cast<String, dynamic>();
-
-  //     if (data != null && data is Map) {
-  //       Map<String, dynamic> mapData = data.cast<String, dynamic>();
-  //       String name = mapData['name'] as String;
-  //       int availableSpace = mapData['availspace'] as int;
-  //       int totalSpace = mapData['totalspace'] as int;
-  //       //String address = mapData['address'] as String;
-
-  //       showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return AlertDialog(
-  //             title: Text(name),
-  //             content: SingleChildScrollView(
-  //               child: ListBody(
-  //                 children: <Widget>[
-  //                   //Text("Address: $address"),
-  //                   Text("Available space: $availableSpace"),
-  //                   Text("Total space: $totalSpace"),
-  //                 ],
-  //               ),
-  //             ),
-  //             actions: <Widget>[
-  //               TextButton(
-  //                 child: Text('OK'),
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                 },
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       );
-  //     }
-  //   }
-  // }
-
-  // Future<void> fetchMarkers() async {
-  //   DatabaseReference parkingRef = FirebaseDatabase.instance.ref("Parking");
-
-  //   DataSnapshot snapshot = (await parkingRef.once()) as DataSnapshot;
-  //   print(snapshot);
-  //   Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
-
-  //   if (data != null) {
-  //     final newmarkers = data.entries.map((entry) {
-  //       final doc = entry.value;
-  //       final lat = doc['latitude'] as double;
-  //       final lng = doc['longitude'] as double;
-  //       final location = doc['location'] as String;
-  //       final snippet = doc['snippet'] as String;
-  //       var availablespace = doc['availspace'] as num;
-
-  //       return Marker(
-  //         markerId: MarkerId(entry.key.toString()),
-  //         position: LatLng(lat, lng),
-  //         infoWindow: InfoWindow(
-  //           title: location,
-  //           snippet: 'Available Space: $availablespace $snippet',
-  //         ),
-  //       );
-  //     });
-
-  //     setState(() {
-  //       markers.addAll(newmarkers);
-  //     });
-  //   }
-  // }
-
-  // Future<void> fetchCircles() async {
-  //   final snapshot =
-  //       await FirebaseFirestore.instance.collection('Parking').get();
-  //   final newCircles = snapshot.docs.map((doc) {
-  //     final data = doc.data();
-  //     final lat = data['latitude'] as double;
-  //     final lng = data['longitude'] as double;
-  //     final radius = data['radius'] as int;
-  //     return Circle(
-  //       circleId: CircleId(doc.id),
-  //       center: LatLng(lat, lng),
-  //       radius: radius.toDouble(),
-  //       fillColor: Colors.green.withOpacity(0.2),
-  //       strokeColor: Colors.green,
-  //       visible: true,
-  //     );
-  //   });
-
-  //   setState(() {
-  //     circles.addAll(newCircles);
-  //   });
-  // }
 
   Future<void> fetchPolygons() async {
     final snapshot =
@@ -372,84 +260,83 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
   }
 
-// Future<void> listenForParkingUpdates() async {
-//   Position position = await determinedPosition();
-//   CollectionReference parkingSpots = FirebaseFirestore.instance.collection('Parking');
-//   DatabaseReference databaseReference = FirebaseDatabase.instance.ref('https://mile2park-d82bd-default-rtdb.asia-southeast1.firebasedatabase.app/').child('Parking');
+  Stream<Position> getUserPositionStream() {
+    // Create a StreamController for the user's position
+    StreamController<Position> positionStreamController =
+        StreamController<Position>();
 
-//   // Listen for changes to the parking spots collection.
-//   listener = parkingSpots.snapshots().listen((snapshot) async {
-//     for (QueryDocumentSnapshot doc in snapshot.docs) {
-//       // Get the points of the parking spot.
-//       List<LatLng> points = List<LatLng>.from((doc['points'] as List)
-//         .map((point) => LatLng((point).latitude, (point).longitude)));
+    // Get the user's position using Geolocator
+    Geolocator.getCurrentPosition().then((position) {
+      // Add the initial position to the stream
+      positionStreamController.add(position);
 
-//       // Check if the user's position is within the polygon defined by the points.
-//       bool isWithin = pointInPolygon(LatLng(position.latitude, position.longitude), points);
+      // Listen for position changes and add them to the stream
+      Geolocator.getPositionStream().listen((position) {
+        positionStreamController.add(position);
+      });
+    }).catchError((error) {
+      // Handle any errors that occur while getting the position
+      positionStreamController.addError(error);
+    });
 
-//       // If the user's position is within the polygon, update the availability of the parking spot.
-//       if (isWithin) {
-//         databaseReference.child(doc.id).once().then((snapshot) async {
-//           int availableSpace = snapshot.value['availspace'] as int;
-//           int totalSpace = snapshot.value['totalspace'] as int;
+    // Return the stream from the StreamController
+    return positionStreamController.stream;
+  }
 
-//           if (availableSpace > 0) {
-//             await databaseReference.child(doc.id).update({
-//               'availspace': totalSpace - 1,
-//             });
-//           } else {
-//             const Text('Parking area is full');
-//           }
-//         });
-//       } else {
-//         databaseReference.child(doc.id).once().then((snapshot) async {
-//           int availableSpace = snapshot.data['availspace'] as int;
-//           int totalSpace = snapshot.data['totalspace'] as int;
+  Future<void> listenForParkingUpdates() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
 
-//           if (availableSpace < totalSpace) {
-//             await databaseReference.child(doc.id).update({
-//               'availspace': availableSpace + 1,
-//             });
-//           }
-//         });
-//       }
-//     }
-//   });
-// }
+    CollectionReference parkingSpotsRef =
+        FirebaseFirestore.instance.collection('Parking');
 
-  // Future<void> listenForParkingUpdates() async {
-  //   Position position = await determinedPosition();
-  //   CollectionReference parkingSpots =
-  //       FirebaseFirestore.instance.collection('Parking');
+    Stream<Position> positionStream = getUserPositionStream();
 
-  //   listener = parkingSpots.snapshots().listen((snapshot) async {
-  //     for (QueryDocumentSnapshot doc in snapshot.docs) {
-  //       List<LatLng> points = List<LatLng>.from((doc['points'] as List)
-  //           .map((point) => LatLng((point).latitude, (point).longitude)));
+    positionStreamSubscription = positionStream.listen((position) {
+      parkingSpotsRef.get().then((snapshot) async {
+        for (QueryDocumentSnapshot doc in snapshot.docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-  //       bool isWithin = pointInPolygon(
-  //           LatLng(position.latitude, position.longitude), points);
+          List<GeoPoint> points = List<GeoPoint>.from(data['points']);
 
-  //       if (isWithin) {
-  //         int availableSpace = doc['availspace'] as int;
-  //         int totalSpace = doc['totalspace'] as int;
-  //         if (availableSpace > 0) {
-  //           await parkingSpots.doc(doc.id).update({
-  //             'availspace': totalSpace - 1,
-  //           });
-  //         } else {
-  //           const Text("Parking area is full");
-  //         }
-  //       } else {
-  //         int availableSpace = doc['availspace'] as int;
-  //         int totalSpace = doc['totalspace'] as int;
-  //         if (availableSpace < totalSpace) {
-  //           await parkingSpots.doc(doc.id).update({
-  //             'availspace': availableSpace + 1,
-  //           });
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
+          List<LatLng> latLngPoints = points
+              .map((geoPoint) => LatLng(geoPoint.latitude, geoPoint.longitude))
+              .toList();
+
+          bool isWithin = pointInPolygon(
+              LatLng(position.latitude, position.longitude), latLngPoints);
+
+          print(isWithin);
+          if (isWithin) {
+            FirebaseServices().addVehicle(uid: uid, parkingId: doc.id);
+          } else {
+            FirebaseServices().removeVehicle(uid, doc.id);
+          }
+
+          // Update the 'parkedcar' count in the Firestore document
+          //await doc.reference.update({'availspace': availableSpace});
+        }
+      });
+    }, onError: (error) {
+      // Handle any errors that occur while getting the user's position
+      print(error);
+    });
+  }
+
+  bool pointInPolygon(LatLng point, List<LatLng> points) {
+    int crossings = 0;
+
+    for (int i = 0; i < points.length; i++) {
+      LatLng a = points[i];
+      LatLng b = points[(i + 1) % points.length];
+      if (((a.latitude <= point.latitude) && (point.latitude < b.latitude)) ||
+          ((b.latitude <= point.latitude) && (point.latitude < a.latitude))) {
+        double vt = (point.latitude - a.latitude) / (b.latitude - a.latitude);
+        if (point.longitude < a.longitude + vt * (b.longitude - a.longitude)) {
+          crossings++;
+        }
+      }
+    }
+
+    return (crossings % 2 == 1);
+  }
 }

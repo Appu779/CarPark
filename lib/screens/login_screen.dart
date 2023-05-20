@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
         body: Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
@@ -42,14 +42,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () async {
                   await FirebaseServices().signInWithGoogle();
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => MapScreen()));
+                      MaterialPageRoute(builder: (context) => const MapScreen()));
                 },
                 icon: Image.asset(
                   "assets/images/g.png",
                   height: 32,
                   width: 32,
                 ),
-                label: Text('Sign in with google'),
+                label: const Text('Sign in with google'),
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
               ),
