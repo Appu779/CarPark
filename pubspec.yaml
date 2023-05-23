@@ -30,8 +30,14 @@ dependencies:
   geofence_flutter: ^2.0.0
   flutter_geofence: ^0.4.4
   location: ^4.4.0
-  device_info: ^2.0.0
-
+  url_launcher: ^6.1.11
+  google_fonts: ^2.1.0
+  permission_handler: ^10.2.0
+  flutter_map: ^4.0.0
+  upi_india: ^3.0.1
+  qr_flutter: ^4.1.0
+  firebase_storage: ^11.2.1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -45,6 +51,7 @@ flutter:
   assets:
      - assets/images/logo.png
      - assets/images/g.png
+     - assets/images/c1.png
 
 
   # fonts:

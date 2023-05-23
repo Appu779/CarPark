@@ -1,3 +1,4 @@
+import 'package:CarPark/payments/payscreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -40,17 +41,27 @@ void showNearbyParking(BuildContext context) {
                   nearbyParkingList =
                   filterNearbyParkings(parkingList, currentPosition!);
 
+              if (nearbyParkingList.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No parking space found nearby.',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                );
+              }
+
               return SizedBox(
                 height: 200,
                 child: ListView.builder(
                   itemCount: nearbyParkingList.length,
                   itemBuilder: (context, index) {
                     final parkingData = nearbyParkingList[index].data();
+                    // final parkingSpotId = nearbyParkingList[index].id;
 
                     return Column(
                       children: [
                         const Text(
-                          "NearBy Parking Areas",
+                          "Nearby Parking Areas",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
@@ -63,7 +74,17 @@ void showNearbyParking(BuildContext context) {
                             ),
                             onTap: () {
                               // Perform share action or navigate to the parking details screen
-                              Navigator.pop(context); // Close the bottom sheet
+                              //Navigator.pop(context); // Close the bottom sheet
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ParkingDetailsScreen(
+                                    availableSpace: parkingData['totalspace'] -
+                                        parkingData['vehicles'].length,
+                                    location: parkingData['location'],
+                                  ),
+                                ),
+                              );
                             },
                           ),
                         ),

@@ -14,7 +14,7 @@ List<QueryDocumentSnapshot<Map<String, dynamic>>> filterNearbyParkings(
 ) {
   // Filter the parking list based on the proximity to the current position
   const double maxDistanceInMeters =
-      1000; // Maximum distance in meters to consider as nearby
+      7000; // Maximum distance in meters to consider as nearby
   final List<QueryDocumentSnapshot<Map<String, dynamic>>> nearbyParkings = [];
 
   for (final parking in parkingList) {

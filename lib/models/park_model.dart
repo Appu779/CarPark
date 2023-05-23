@@ -15,7 +15,6 @@ class ParkModel {
   });
 
   ParkModel copyWith({
-    int? eventPeriod,
     double? latitude,
     double? longitude,
     int? totalspace,

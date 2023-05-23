@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../components/sidebar.dart';
 import '../functions/model_bottom_sheet_parking.dart';
 import '../functions/nearbyparking_bsheet.dart';
 import '../services/firebase_service.dart';
@@ -34,31 +35,63 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     enableLocationService();
+    requestStoragePermission();
     fetchMarkers();
     fetchPolygons();
-    listenForParkingUpdates();
+    //listenForParkingUpdates();
 
     animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 100));
-    // timer = Timer.periodic(const Duration(seconds: 4),
-    //     runFunction); // Add this line to create the Timer
   }
-
-  // void runFunction(Timer timer) {
-  //   listenForParkingUpdates();
-  // }
 
   @override
   void dispose() {
     animationController.dispose();
     positionStreamSubscription.cancel();
-    //timer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Drawer Header',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                // Navigate to the home screen
+                Navigator.pop(context); // Close the drawer
+                // TODO: Add navigation logic
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                // Navigate to the settings screen
+                Navigator.pop(context); // Close the drawer
+                // TODO: Add navigation logic
+              },
+            ),
+          ],
+        ),
+      ),
+
       body: Stack(
         children: [
           GoogleMap(
@@ -70,11 +103,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               mapController = controller;
               fetchMarkers();
               fetchPolygons();
-
               listenForParkingUpdates();
-
-              //await _showParkingDetails("P1");
-              //await listenForParkingUpdates();
             },
             zoomGesturesEnabled: true,
             zoomControlsEnabled: true,
@@ -93,16 +122,14 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             left: 20,
             child: GestureDetector(
               onTap: () {
-                isMenuOpen = !isMenuOpen;
-                if (isMenuOpen) {
-                  animationController.forward();
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SideBar(),
-                      ));
-                  animationController.reverse();
-                }
+                setState(() {
+                  isMenuOpen = !isMenuOpen;
+                  if (isMenuOpen) {
+                    animationController.forward();
+                  } else {
+                    animationController.reverse();
+                  }
+                });
               },
               child: AnimatedIcon(
                 icon: AnimatedIcons.menu_close,
@@ -111,57 +138,84 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          Positioned(
-            top: 30,
-            right: 20,
-            child: IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {},
-              color: Colors.black,
+          if (isMenuOpen)
+            Container(
+              color: Colors.black.withOpacity(0.6),
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    isMenuOpen = false;
+                    animationController.reverse();
+                  });
+                },
+              ),
             ),
-          ),
-          // Positioned(
-          //   top: 60,
-          //   right: 20,
-          //   child: IconButton(
-          //     icon: const Icon(Icons.park_rounded),
-          //     onPressed: () {},
-          //     color: Colors.black,
-          //   ),
-          // )
+          Positioned(
+              left: 20,
+              bottom: 8.0,
+              child: FloatingActionButton(
+                backgroundColor: Colors.green,
+                onPressed: () async {
+                  Position position = await userLocation();
+
+                  mapController.animateCamera(CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                          target: LatLng(position.latitude, position.longitude),
+                          zoom: 15)));
+                },
+                tooltip: 'My Location',
+                child: const Icon(Icons.my_location),
+              )),
+          Positioned(
+              left: 20,
+              bottom: 70.0,
+              child: FloatingActionButton(
+                onPressed: () {
+                  //findNearbyParkingAreas();
+                  showNearbyParking(context);
+                },
+                tooltip: 'Nearby Parking',
+                child: const Icon(Icons.local_parking_sharp),
+              ))
         ],
       ),
-      //floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: Stack(children: [
-        Positioned(
-            left: 20,
-            bottom: 8.0,
-            child: FloatingActionButton(
-              backgroundColor: Colors.green,
-              onPressed: () async {
-                Position position = await userLocation();
+      // Positioned(
+      //   top: 30,
+      //   right: 20,
+      //   child: IconButton(
+      //     icon: const Icon(Icons.search),
+      //     onPressed: () {},
+      //     color: Colors.black,
+      //   ),
+      // ),
+      // Positioned(
+      //   top: 60,
+      //   right: 20,
+      //   child: IconButton(
+      //     icon: const Icon(Icons.park_rounded),
+      //     onPressed: () {},
+      //     color: Colors.black,
+      //   ),
+      // )
 
-                mapController.animateCamera(CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                        target: LatLng(position.latitude, position.longitude),
-                        zoom: 15)));
-              },
-              tooltip: 'My Location',
-              child: const Icon(Icons.my_location),
-            )),
-        Positioned(
-            left: 20,
-            bottom: 70.0,
-            child: FloatingActionButton(
-              onPressed: () {
-                //findNearbyParkingAreas();
-                showNearbyParking(context);
-              },
-              tooltip: 'Nearby Parking',
-              child: const Icon(Icons.local_parking_sharp),
-            ))
-      ]),
+      //floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButton: Stack(children: []),
     );
+  }
+
+  Future<void> requestStoragePermission() async {
+    PermissionStatus status = await Permission.storage.request();
+    if (status == PermissionStatus.granted) {
+      // Permission granted
+      // You can proceed with accessing storage
+    } else if (status == PermissionStatus.denied) {
+      // Permission denied
+      return;
+    } else if (status == PermissionStatus.permanentlyDenied) {
+      // Permission permanently denied
+      // Open app settings to enable storage permission manually
+      await openAppSettings();
+    }
   }
 
   Future<void> enableLocationService() async {

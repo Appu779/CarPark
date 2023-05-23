@@ -40,6 +40,7 @@ Future<void> listenForParkingUpdates() async {
   positionStreamSubscription = positionStream.listen((position) {
     parkingSpotsRef.get().then((snapshot) async {
       for (QueryDocumentSnapshot doc in snapshot.docs) {
+       
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
        
 
