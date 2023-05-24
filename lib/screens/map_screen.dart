@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,9 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../components/sidebarpages.dart/drawerheader.dart';
+import '../components/sidebarpages.dart/orders.dart';
 import '../functions/model_bottom_sheet_parking.dart';
 import '../functions/nearbyparking_bsheet.dart';
 import '../services/firebase_service.dart';
+import 'login_screen.dart';
 
 const LatLng currentLocation = LatLng(12.092770, 75.194881);
 
@@ -51,47 +53,36 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  var currentPage = DrawerSections.home;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mile2Park'),
+        backgroundColor: Colors.green,
+      ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text(
-                'Drawer Header',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ClipPath(
+                clipper: CustomDrawerShape(),
+                child: Container(
+                  color: Colors.blue, // Set your desired background color
+                  child: Column(
+                    children: [
+                      MyHeaderDrawer(),
+                      // Add any additional content for the header
+                    ],
+                  ),
                 ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {
-                // Navigate to the home screen
-                Navigator.pop(context); // Close the drawer
-                // TODO: Add navigation logic
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                // Navigate to the settings screen
-                Navigator.pop(context); // Close the drawer
-                // TODO: Add navigation logic
-              },
-            ),
-          ],
+              myDrawerList(),
+            ],
+          ),
         ),
       ),
-
       body: Stack(
         children: [
           GoogleMap(
@@ -117,39 +108,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             //circles: circles,
             polygons: polygons,
           ),
-          Positioned(
-            top: 43,
-            left: 20,
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  isMenuOpen = !isMenuOpen;
-                  if (isMenuOpen) {
-                    animationController.forward();
-                  } else {
-                    animationController.reverse();
-                  }
-                });
-              },
-              child: AnimatedIcon(
-                icon: AnimatedIcons.menu_close,
-                progress: animationController,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          if (isMenuOpen)
-            Container(
-              color: Colors.black.withOpacity(0.6),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isMenuOpen = false;
-                    animationController.reverse();
-                  });
-                },
-              ),
-            ),
           Positioned(
               left: 20,
               bottom: 8.0,
@@ -179,27 +137,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               ))
         ],
       ),
-      // Positioned(
-      //   top: 30,
-      //   right: 20,
-      //   child: IconButton(
-      //     icon: const Icon(Icons.search),
-      //     onPressed: () {},
-      //     color: Colors.black,
-      //   ),
-      // ),
-      // Positioned(
-      //   top: 60,
-      //   right: 20,
-      //   child: IconButton(
-      //     icon: const Icon(Icons.park_rounded),
-      //     onPressed: () {},
-      //     color: Colors.black,
-      //   ),
-      // )
-
-      //floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: Stack(children: []),
     );
   }
 
@@ -212,8 +149,6 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       // Permission denied
       return;
     } else if (status == PermissionStatus.permanentlyDenied) {
-      // Permission permanently denied
-      // Open app settings to enable storage permission manually
       await openAppSettings();
     }
   }
@@ -359,7 +294,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           bool isWithin = pointInPolygon(
               LatLng(position.latitude, position.longitude), latLngPoints);
 
-          print(isWithin);
+          //print(isWithin);
           if (isWithin) {
             FirebaseServices().addVehicle(uid: uid, parkingId: doc.id);
           } else {
@@ -393,4 +328,81 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     return (crossings % 2 == 1);
   }
+
+  Widget myDrawerList() {
+    return Container(
+      padding: const EdgeInsets.only(
+        top: 15,
+      ),
+      child: Column(
+          // shows the list of menu drawer
+          children: [
+            menuItem(1, "Home", Icons.home,
+                currentPage == DrawerSections.home ? true : false),
+            menuItem(2, "Transactions", Icons.history,
+                currentPage == DrawerSections.orders ? true : false),
+            const Divider(),
+            menuItem(3, "LogOut", Icons.logout,
+                currentPage == DrawerSections.logout ? true : false),
+          ]),
+    );
+  }
+
+  Widget menuItem(int id, String title, IconData icon, bool selected) {
+    return Material(
+      color: selected ? Colors.grey[300] : Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.pop(context);
+          setState(() {
+            if (id == 1) {
+              currentPage = DrawerSections.home;
+            } else if (id == 2) {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const OrdersHistory()));
+            } else if (id == 3) {
+              performLogout();
+            }
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: Colors.black,
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void performLogout() async {
+    FirebaseServices().signOut();
+    await Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
+    );
+  }
 }
+
+enum DrawerSections { home, orders, logout }

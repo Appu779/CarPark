@@ -42,7 +42,7 @@ void showNearbyParking(BuildContext context) {
                   filterNearbyParkings(parkingList, currentPosition!);
 
               if (nearbyParkingList.isEmpty) {
-                return Center(
+                return const Center(
                   child: Text(
                     'No parking space found nearby.',
                     style: TextStyle(fontSize: 18),

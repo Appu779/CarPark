@@ -57,7 +57,7 @@ class _UpiPayState extends State<UpiPay> {
       'transactionRefId': 'TestingUpiIndiaPlugin',
       'transactionNote': 'Parking Amount pay',
       'amount': widget.amount,
-      'location': widget,
+      'location': widget.location,
       'status': 'Pending', // Initial status is set to Pending
     };
 
@@ -72,7 +72,7 @@ class _UpiPayState extends State<UpiPay> {
     return upiIndia.startTransaction(
       app: app,
       receiverUpiId: "unnisapna123@upi",
-      receiverName: 'VAISHNAV KRISHNA',
+      receiverName: 'UNNIKRISHNAN SAPNA',
       transactionRefId: 'TestingUpiIndiaPlugin',
       transactionNote: 'Parking Amount pay',
       amount: widget.amount,

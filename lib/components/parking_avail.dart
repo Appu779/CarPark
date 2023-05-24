@@ -24,14 +24,14 @@ Stream<Position> getUserPositionStream() {
     positionStreamController.addError(error);
   });
 
-  // Return the stream from the StreamController
+  //Return the stream from the StreamController
   return positionStreamController.stream;
 }
 
 late StreamSubscription<Position> positionStreamSubscription;
 Future<void> listenForParkingUpdates() async {
   String uid = FirebaseAuth.instance.currentUser!.uid;
-  
+
   CollectionReference parkingSpotsRef =
       FirebaseFirestore.instance.collection('Parking');
 
@@ -40,9 +40,7 @@ Future<void> listenForParkingUpdates() async {
   positionStreamSubscription = positionStream.listen((position) {
     parkingSpotsRef.get().then((snapshot) async {
       for (QueryDocumentSnapshot doc in snapshot.docs) {
-       
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-       
 
         List<GeoPoint> points = List<GeoPoint>.from(data['points']);
 
@@ -53,14 +51,14 @@ Future<void> listenForParkingUpdates() async {
         bool isWithin = pointInPolygon(
             LatLng(position.latitude, position.longitude), latLngPoints);
 
-        print(isWithin);
+        //print(isWithin);
         if (isWithin) {
           FirebaseServices().addVehicle(uid: uid, parkingId: doc.id);
         } else {
           FirebaseServices().removeVehicle(uid, doc.id);
         }
 
-        // Update the 'parkedcar' count in the Firestore document
+        //Update the 'parkedcar' count in the Firestore document
         //await doc.reference.update({'parkedcar': availableSpace});
       }
     });
