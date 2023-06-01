@@ -18,7 +18,6 @@ class _UpiPayState extends State<UpiPay> {
   Future<UpiResponse>? _transaction;
   UpiIndia upiIndia = UpiIndia();
   List<UpiApp>? apps;
-  late String _qrCodeData;
 
   TextStyle header = const TextStyle(
     fontSize: 18,

@@ -71,7 +71,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 child: Container(
                   color: Colors.blue, // Set your desired background color
                   child: Column(
-                    children: [
+                    children: const [
                       MyHeaderDrawer(),
                       // Add any additional content for the header
                     ],
@@ -330,21 +330,56 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   Widget myDrawerList() {
+    //bool isLightThemeSelected = true; // Initial selection
+
     return Container(
-      padding: const EdgeInsets.only(
-        top: 15,
-      ),
+      padding: const EdgeInsets.only(top: 15),
       child: Column(
-          // shows the list of menu drawer
-          children: [
-            menuItem(1, "Home", Icons.home,
-                currentPage == DrawerSections.home ? true : false),
-            menuItem(2, "Transactions", Icons.history,
-                currentPage == DrawerSections.orders ? true : false),
-            const Divider(),
-            menuItem(3, "LogOut", Icons.logout,
-                currentPage == DrawerSections.logout ? true : false),
-          ]),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          menuItem(1, "Home", Icons.home, currentPage == DrawerSections.home),
+          menuItem(2, "Transactions", Icons.history,
+              currentPage == DrawerSections.orders),
+          const Divider(),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.start,
+          //   children: [
+          //     Icon(
+          //       Icons.light_mode,
+          //       color: isLightThemeSelected ? Colors.blue : Colors.grey,
+          //     ),
+          //     const SizedBox(width: 10),
+          //     Text(
+          //       'Light Theme',
+          //       style: TextStyle(
+          //         color: isLightThemeSelected ? Colors.black : Colors.grey,
+          //         fontSize: 16,
+          //       ),
+          //     ),
+          //     const Spacer(),
+          //     Switch(
+          //       value: isLightThemeSelected,
+          //       onChanged: (value) {
+          //         setState(() {
+          //           isLightThemeSelected = value;
+          //           // Apply the selected theme
+          //           if (isLightThemeSelected) {
+          //             // Set light theme
+          //             // Example: Provider.of<ThemeModel>(context, listen: false).setLightTheme();
+          //           } else {
+          //             // Set dark theme
+          //             // Example: Provider.of<ThemeModel>(context, listen: false).setDarkTheme();
+          //           }
+          //         });
+          //       },
+          //     ),
+          //   ],
+          // ),
+          const Divider(),
+          menuItem(
+              3, "Log Out", Icons.logout, currentPage == DrawerSections.logout),
+        ],
+      ),
     );
   }
 
@@ -395,6 +430,78 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     );
   }
 
+// void _showThemeSelectionDialog() {
+//   bool isLightThemeSelected = true; // Initial selection
+
+//   showDialog(
+//     context: context,
+//     builder: (BuildContext context) {
+//       return AlertDialog(
+//         title: const Text('Select Theme'),
+//         content: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             Row(
+//               children: [
+//                 Icon(
+//                   Icons.light_mode,
+//                   color: isLightThemeSelected ? Colors.blue : Colors.grey,
+//                 ),
+//                 const SizedBox(width: 10),
+//                 Text('Light Theme'),
+//                 const Spacer(),
+//                 Switch(
+//                   value: isLightThemeSelected,
+//                   onChanged: (value) {
+//                     setState(() {
+//                       isLightThemeSelected = value;
+//                     });
+//                   },
+//                 ),
+//               ],
+//             ),
+//             Row(
+//               children: [
+//                 Icon(
+//                   Icons.dark_mode,
+//                   color: !isLightThemeSelected ? Colors.blue : Colors.grey,
+//                 ),
+//                 const SizedBox(width: 10),
+//                 Text('Dark Theme'),
+//                 const Spacer(),
+//                 Switch(
+//                   value: !isLightThemeSelected,
+//                   onChanged: (value) {
+//                     setState(() {
+//                       isLightThemeSelected = !value;
+//                     });
+//                   },
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//         actions: [
+//           ElevatedButton(
+//             onPressed: () {
+//               // Apply the selected theme
+//               if (isLightThemeSelected) {
+//                 // Set light theme
+//                 // Example: Provider.of<ThemeModel>(context, listen: false).setLightTheme();
+//               } else {
+//                 // Set dark theme
+//                 // Example: Provider.of<ThemeModel>(context, listen: false).setDarkTheme();
+//               }
+//               Navigator.pop(context);
+//             },
+//             child: const Text('Apply'),
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
+
   void performLogout() async {
     FirebaseServices().signOut();
     await Navigator.pushAndRemoveUntil(
@@ -405,4 +512,4 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 }
 
-enum DrawerSections { home, orders, logout }
+enum DrawerSections { home, orders, logout, theme }
