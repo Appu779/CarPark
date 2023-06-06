@@ -8,6 +8,21 @@ class FirebaseServices {
   final firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
   final _googleSignIn = GoogleSignIn();
+
+  bool isUserLoggedIn() {
+  // Implement your logic here to check if the user is logged in
+  // You can use FirebaseAuth to check the authentication state
+  final currentUser = FirebaseAuth.instance.currentUser;
+  return currentUser != null;
+}
+
+bool isCurrentUser(String userId) {
+  // Implement your logic here to check if the current user matches the provided userId
+  // You can use FirebaseAuth to get the current user and compare the userId
+  final currentUser = FirebaseAuth.instance.currentUser;
+  return currentUser != null && currentUser.uid == userId;
+}
+
   signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleSignInAccount =
@@ -57,13 +72,13 @@ class FirebaseServices {
   }
 
 // function to get the number of vacancy
-  Future<int> getNumberOfAvailableParking(String parkingId) async {
-    DocumentReference<Map<String, dynamic>> docRef =
-        firestore.collection("Parking").doc(parkingId);
-    DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
-    ParkModel model = ParkModel.fromMap(snapshot.data()!);
-    return model.totalspace - model.vehicles.length;
-  }
+//   Future<int> getNumberOfAvailableParking(String parkingId) async {
+//     DocumentReference<Map<String, dynamic>> docRef =
+//         firestore.collection("Parking").doc(parkingId);
+//     DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
+//     ParkModel model = ParkModel.fromMap(snapshot.data()!);
+//     return model.totalspace - model.vehicles.length;
+//   }
 
 // function to remove vehicle from parkList
   Future<void> removeVehicle(String uid, String parkingId) async {

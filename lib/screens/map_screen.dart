@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:CarPark/components/sidebarpages.dart/profile.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -338,46 +339,12 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           menuItem(1, "Home", Icons.home, currentPage == DrawerSections.home),
-          menuItem(2, "Transactions", Icons.history,
+          menuItem(2, "Profile", Icons.person, currentPage == DrawerSections.profile),
+          menuItem(3, "Transactions", Icons.history,
               currentPage == DrawerSections.orders),
           const Divider(),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.start,
-          //   children: [
-          //     Icon(
-          //       Icons.light_mode,
-          //       color: isLightThemeSelected ? Colors.blue : Colors.grey,
-          //     ),
-          //     const SizedBox(width: 10),
-          //     Text(
-          //       'Light Theme',
-          //       style: TextStyle(
-          //         color: isLightThemeSelected ? Colors.black : Colors.grey,
-          //         fontSize: 16,
-          //       ),
-          //     ),
-          //     const Spacer(),
-          //     Switch(
-          //       value: isLightThemeSelected,
-          //       onChanged: (value) {
-          //         setState(() {
-          //           isLightThemeSelected = value;
-          //           // Apply the selected theme
-          //           if (isLightThemeSelected) {
-          //             // Set light theme
-          //             // Example: Provider.of<ThemeModel>(context, listen: false).setLightTheme();
-          //           } else {
-          //             // Set dark theme
-          //             // Example: Provider.of<ThemeModel>(context, listen: false).setDarkTheme();
-          //           }
-          //         });
-          //       },
-          //     ),
-          //   ],
-          // ),
-          const Divider(),
           menuItem(
-              3, "Log Out", Icons.logout, currentPage == DrawerSections.logout),
+              4, "Log Out", Icons.logout, currentPage == DrawerSections.logout),
         ],
       ),
     );
@@ -392,12 +359,18 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           setState(() {
             if (id == 1) {
               currentPage = DrawerSections.home;
-            } else if (id == 2) {
+            }
+            else if(id==2){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfilePage()));
+            } else if (id == 3) {
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const OrdersHistory()));
-            } else if (id == 3) {
+            } else if (id == 4) {
               performLogout();
             }
           });
@@ -430,80 +403,9 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     );
   }
 
-// void _showThemeSelectionDialog() {
-//   bool isLightThemeSelected = true; // Initial selection
-
-//   showDialog(
-//     context: context,
-//     builder: (BuildContext context) {
-//       return AlertDialog(
-//         title: const Text('Select Theme'),
-//         content: Column(
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             Row(
-//               children: [
-//                 Icon(
-//                   Icons.light_mode,
-//                   color: isLightThemeSelected ? Colors.blue : Colors.grey,
-//                 ),
-//                 const SizedBox(width: 10),
-//                 Text('Light Theme'),
-//                 const Spacer(),
-//                 Switch(
-//                   value: isLightThemeSelected,
-//                   onChanged: (value) {
-//                     setState(() {
-//                       isLightThemeSelected = value;
-//                     });
-//                   },
-//                 ),
-//               ],
-//             ),
-//             Row(
-//               children: [
-//                 Icon(
-//                   Icons.dark_mode,
-//                   color: !isLightThemeSelected ? Colors.blue : Colors.grey,
-//                 ),
-//                 const SizedBox(width: 10),
-//                 Text('Dark Theme'),
-//                 const Spacer(),
-//                 Switch(
-//                   value: !isLightThemeSelected,
-//                   onChanged: (value) {
-//                     setState(() {
-//                       isLightThemeSelected = !value;
-//                     });
-//                   },
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//         actions: [
-//           ElevatedButton(
-//             onPressed: () {
-//               // Apply the selected theme
-//               if (isLightThemeSelected) {
-//                 // Set light theme
-//                 // Example: Provider.of<ThemeModel>(context, listen: false).setLightTheme();
-//               } else {
-//                 // Set dark theme
-//                 // Example: Provider.of<ThemeModel>(context, listen: false).setDarkTheme();
-//               }
-//               Navigator.pop(context);
-//             },
-//             child: const Text('Apply'),
-//           ),
-//         ],
-//       );
-//     },
-//   );
-// }
-
   void performLogout() async {
     FirebaseServices().signOut();
+
     await Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -512,4 +414,4 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 }
 
-enum DrawerSections { home, orders, logout, theme }
+enum DrawerSections { home, orders, logout, profile }

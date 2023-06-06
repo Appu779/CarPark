@@ -34,6 +34,9 @@ dependencies:
   permission_handler: ^10.2.0
   flutter_map: ^4.0.0
   upi_india: ^3.0.1
+  image_picker: ^0.8.4+3
+  firebase_storage: ^11.2.2
+  
 
   
 dev_dependencies:
