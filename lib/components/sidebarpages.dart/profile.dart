@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../screens/map_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -14,54 +17,27 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  User? user;
+  late SharedPreferences _prefs;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   String? _selectedGender;
   final TextEditingController _addressController = TextEditingController();
-
-  File? _image;
-  final picker = ImagePicker();
-
-  Future<void> requestStoragePermission() async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      await Permission.storage.request();
-    }
-  }
-
-  Future getImage() async {
-    await requestStoragePermission();
-
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
+  final TextEditingController _rcController = TextEditingController();
+  final TextEditingController _regnumController = TextEditingController();
+  Future<void> _loadSelectedGender() async {
+    _prefs = await SharedPreferences.getInstance();
     setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      }
+      _selectedGender = _prefs.getString('selectedGender');
     });
   }
 
-  Future<void> uploadImageToFirebase() async {
-    if (_image != null) {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      final userId = currentUser?.uid;
-      if (userId != null) {
-        final firebaseStorageRef = firebase_storage.FirebaseStorage.instance
-            .ref()
-            .child('user_images')
-            .child('$userId.jpg');
-
-        await firebaseStorageRef.putFile(_image!);
-        final downloadURL = await firebaseStorageRef.getDownloadURL();
-
-        // Save the downloadURL to the user's profile document in Firestore
-        FirebaseFirestore.instance
-            .collection('userdetails')
-            .doc(userId)
-            .set({'profileImage': downloadURL}, SetOptions(merge: true));
-      }
-    }
+  Future<void> _saveSelectedGender(String gender) async {
+    setState(() {
+      _selectedGender = gender;
+    });
+    await _prefs.setString('selectedGender', gender);
   }
 
   Future<void> submitForm() async {
@@ -74,7 +50,18 @@ class _ProfilePageState extends State<ProfilePage> {
           'dob': _dobController.text,
           'gender': _selectedGender,
           'address': _addressController.text,
-        }, SetOptions(merge: true));
+          'rc': _rcController.text,
+          'carno' : _regnumController.text,
+        }, SetOptions(merge: true)).then((_) async {
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setBool('profileCompleted', true);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MapScreen(),
+            ),
+          );
+        });
       }
     }
   }
@@ -82,9 +69,10 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    _loadSelectedGender();
 
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final userId = currentUser?.uid;
+    user = FirebaseAuth.instance.currentUser;
+    final userId = user?.uid;
     if (userId != null) {
       FirebaseFirestore.instance
           .collection('userdetails')
@@ -107,7 +95,14 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameController.dispose();
     _dobController.dispose();
     _addressController.dispose();
+
     super.dispose();
+  }
+
+  String getEmailHash(String email) {
+    final emailBytes = utf8.encode(email.toLowerCase().trim());
+    final hash = md5.convert(emailBytes);
+    return hash.toString();
   }
 
   @override
@@ -124,15 +119,10 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onTap: getImage,
-                  child: CircleAvatar(
-                    radius: 80,
-                    backgroundImage: _image != null
-                        ? Image.file(_image!).image
-                        : NetworkImage(
-                            '${FirebaseAuth.instance.currentUser?.email.hashCode}?d=robohash',
-                          ),
+                CircleAvatar(
+                  radius: 70,
+                  backgroundImage: NetworkImage(
+                    user?.photoURL ?? 'https://example.com/default-image.jpg',
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -184,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   decoration: const InputDecoration(
                     labelText: 'Gender',
                   ),
-                  items: [
+                  items: const [
                     DropdownMenuItem(
                       value: 'Male',
                       child: Text('Male'),

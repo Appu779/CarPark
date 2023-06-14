@@ -36,6 +36,7 @@ dependencies:
   upi_india: ^3.0.1
   image_picker: ^0.8.4+3
   firebase_storage: ^11.2.2
+  qr_flutter: ^4.1.0
   
 
   

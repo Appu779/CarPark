@@ -54,7 +54,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  var currentPage = DrawerSections.home;
+  var currentPage = DrawerSections.logout;
 
   @override
   Widget build(BuildContext context) {
@@ -361,16 +361,19 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               currentPage = DrawerSections.home;
             }
             else if(id==2){
+              currentPage = DrawerSections.profile;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const ProfilePage()));
             } else if (id == 3) {
+              currentPage = DrawerSections.orders;
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const OrdersHistory()));
             } else if (id == 4) {
+              currentPage = DrawerSections.logout;
               performLogout();
             }
           });
