@@ -53,7 +53,7 @@ class CustomDrawerShape extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
-    final double radius = 30.0; // Adjust the radius as needed
+    const double radius = 30.0; // Adjust the radius as needed
 
     path.lineTo(0, size.height); // Start at the bottom left corner
     path.quadraticBezierTo(0, size.height - radius, radius, size.height - radius); // Bottom left curve

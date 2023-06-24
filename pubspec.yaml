@@ -26,7 +26,6 @@ dependencies:
   floating_navbar: ^2.0.2
   firebase_database: ^10.1.1
   cloud_firestore: ^4.5.3
-  geoflutterfire2: ^2.3.15
   geofence_flutter: ^2.0.0
   flutter_geofence: ^0.4.4
   location: ^4.4.0
@@ -35,8 +34,11 @@ dependencies:
   permission_handler: ^10.2.0
   flutter_map: ^4.0.0
   upi_india: ^3.0.1
+  image_picker: ^0.8.4+3
+  firebase_storage: ^11.2.2
   qr_flutter: ^4.1.0
-  firebase_storage: ^11.2.1
+  
+
   
 dev_dependencies:
   flutter_test:

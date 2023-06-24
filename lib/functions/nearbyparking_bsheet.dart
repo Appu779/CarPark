@@ -56,7 +56,8 @@ void showNearbyParking(BuildContext context) {
                   itemCount: nearbyParkingList.length,
                   itemBuilder: (context, index) {
                     final parkingData = nearbyParkingList[index].data();
-                    // final parkingSpotId = nearbyParkingList[index].id;
+                    final availableSpace = parkingData['totalspace'] -
+                        parkingData['vehicles'].length;
 
                     return Column(
                       children: [
@@ -69,23 +70,24 @@ void showNearbyParking(BuildContext context) {
                           child: ListTile(
                             title: Text(parkingData['location']),
                             trailing: CircleAvatar(
-                              child: Text(
-                                  "${parkingData['totalspace'] - parkingData['vehicles'].length}"),
+                              child: Text("$availableSpace"),
                             ),
-                            onTap: () {
-                              // Perform share action or navigate to the parking details screen
-                              //Navigator.pop(context); // Close the bottom sheet
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ParkingDetailsScreen(
-                                    availableSpace: parkingData['totalspace'] -
-                                        parkingData['vehicles'].length,
-                                    location: parkingData['location'],
-                                  ),
-                                ),
-                              );
-                            },
+                            onTap: availableSpace > 0
+                                ? () {
+                                    // Perform share action or navigate to the parking details screen
+                                    //Navigator.pop(context); // Close the bottom sheet
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ParkingDetailsScreen(
+                                          availableSpace: availableSpace,
+                                          location: parkingData['location'],
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                : null, // Disable onTap when available parking is 0
                           ),
                         ),
                       ],

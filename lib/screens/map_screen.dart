@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:CarPark/components/sidebarpages.dart/profile.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,7 +54,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  var currentPage = DrawerSections.home;
+  var currentPage = DrawerSections.logout;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +72,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 child: Container(
                   color: Colors.blue, // Set your desired background color
                   child: Column(
-                    children: [
+                    children: const [
                       MyHeaderDrawer(),
                       // Add any additional content for the header
                     ],
@@ -330,21 +331,22 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   Widget myDrawerList() {
+    //bool isLightThemeSelected = true; // Initial selection
+
     return Container(
-      padding: const EdgeInsets.only(
-        top: 15,
-      ),
+      padding: const EdgeInsets.only(top: 15),
       child: Column(
-          // shows the list of menu drawer
-          children: [
-            menuItem(1, "Home", Icons.home,
-                currentPage == DrawerSections.home ? true : false),
-            menuItem(2, "Transactions", Icons.history,
-                currentPage == DrawerSections.orders ? true : false),
-            const Divider(),
-            menuItem(3, "LogOut", Icons.logout,
-                currentPage == DrawerSections.logout ? true : false),
-          ]),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          menuItem(1, "Home", Icons.home, currentPage == DrawerSections.home),
+          menuItem(2, "Profile", Icons.person, currentPage == DrawerSections.profile),
+          menuItem(3, "Transactions", Icons.history,
+              currentPage == DrawerSections.orders),
+          const Divider(),
+          menuItem(
+              4, "Log Out", Icons.logout, currentPage == DrawerSections.logout),
+        ],
+      ),
     );
   }
 
@@ -357,12 +359,21 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           setState(() {
             if (id == 1) {
               currentPage = DrawerSections.home;
-            } else if (id == 2) {
+            }
+            else if(id==2){
+              currentPage = DrawerSections.profile;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfilePage()));
+            } else if (id == 3) {
+              currentPage = DrawerSections.orders;
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const OrdersHistory()));
-            } else if (id == 3) {
+            } else if (id == 4) {
+              currentPage = DrawerSections.logout;
               performLogout();
             }
           });
@@ -397,6 +408,7 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   void performLogout() async {
     FirebaseServices().signOut();
+
     await Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -405,4 +417,4 @@ class MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 }
 
-enum DrawerSections { home, orders, logout }
+enum DrawerSections { home, orders, logout, profile }
